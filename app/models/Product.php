@@ -1,38 +1,33 @@
 <?php
-abstract class Product {
-    protected $sku;
-    protected $name;
-    protected $price;
-    protected $type;
+class Product {
+    private $conn;
+    private $table = "products";
 
-    abstract public function save();
-
-    public function setSKU($sku) {
-        $this->sku = $sku;
-    }
-
-    public function setName($name) {
-        $this->name = $name;
-    }
-
-    public function setPrice($price) {
-        $this->price = $price;
-    }
-
-    public function setType(ProductType $type) {
-        $this->type = $type;
+    public function __construct($db) {
+        $this->conn = $db;
     }
 
     public function getAllProducts() {
-        $db = new Database();
-        $db->query("SELECT * FROM products");
-        return $db->resultSet();
+        $query = "SELECT * FROM " . $this->table;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
     }
 
-    public function delete($id) {
-        $db = new Database();
-        $db->query("DELETE FROM products WHERE id = :id");
-        $db->bind(':id', $id);
-        $db->execute();
+    public function deleteProducts($productIds) {
+        if (empty($productIds)) {
+            return;
+        }
+
+        // Create a comma-separated list of placeholders for the SQL query
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+
+        // Prepare the DELETE query
+        $query = "DELETE FROM " . $this->table . " WHERE sku IN (" . $placeholders . ")";
+        $stmt = $this->conn->prepare($query);
+
+        // Execute the query with the product IDs
+        $stmt->execute($productIds);
     }
 }
+?>
