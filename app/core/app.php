@@ -1,39 +1,54 @@
 <?php
 class App {
-    protected $controller = "home";
+    protected $controller = "Home";
     protected $method = "index";
     protected $params = [];
+    private $db;
 
-    public function __construct() 
-    {
+    public function __construct($db) {
+        $this->db = $db;
         $url = $this->parseURL();
 
-        if(file_exists("../app/controllers/".strtolower($url[0]).".php")) 
-        {
-            $this->controller = ucfirst(strtolower($url[0]));
-            unset($url[0]);
+        $controllerClass = str_replace(' ', '', ucwords(str_replace('-', ' ', $url[0])));
+        $controllerFile = "../app/controllers/" . ucfirst($url[0]) . ".php";
 
-            require "../app/controllers/".$this->controller.".php";
+        if (file_exists($controllerFile)) {
+            require $controllerFile;
+        
+            if (class_exists($controllerClass)) {
+                $this->controller = new $controllerClass($this->db);
+                unset($url[0]);
 
-            $this->controller = new $this->controller;
-
-            if(isset($url[1])) 
-            {   
-                $url[1] = strtolower($url[1]);
-                if(method_exists($this->controller, $url[1])) 
-                {
-                    $this->method = strtolower($url[1]);
+                if (isset($url[1]) && method_exists($this->controller, $url[1])) {
+                    $this->method = $url[1];
                     unset($url[1]);
                 }
+            } else {
+                $this->method = "index";
             }
-            $this->params = $url ? array_values($url) : [];
+        } else {
+            $this->method = "index";
+        }
+
+        $this->params = $url ? array_values($url) : [];
+
+        if (is_callable([$this->controller, $this->method])) {
             call_user_func_array([$this->controller, $this->method], $this->params);
+        } else {
+            if (method_exists($this->controller, 'index')) {
+                $this->controller->index();
+            } else {
+                echo "404 - Method Not Found";
+            }
         }
     }
 
-    private function parseURL() 
-    {
-        $url = isset($_GET['url']) ? $_GET['url'] : "products";
+    private function parseURL() {
+        $url = isset($_GET['url']) ? $_GET['url'] : "home/index";
         return explode("/", filter_var(trim($url, "/"), FILTER_SANITIZE_URL));
     }
 }
+
+
+
+?>

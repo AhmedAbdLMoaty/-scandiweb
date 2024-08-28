@@ -1,7 +1,10 @@
-<?php 
+<?php
+require_once '../app/core/app.php';
+require_once '../app/core/controller.php';
+require_once '../app/core/database.php';
 
-session_start();
-include "../app/init.php";
+$database = new Database();
+$db = $database->getConnection();
 
-
-$app =new App();
+$app = new App($db);
+?>

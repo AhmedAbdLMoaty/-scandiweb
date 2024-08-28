@@ -14,20 +14,34 @@ class Product {
         return $stmt;
     }
 
-    public function deleteProducts($productIds) {
-        if (empty($productIds)) {
-            return;
-        }
+    public function skuExists($sku) {
+        $query = "SELECT COUNT(*) FROM " . $this->table . " WHERE sku = :sku";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':sku', $sku);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
 
-        // Create a comma-separated list of placeholders for the SQL query
-        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
-
-        // Prepare the DELETE query
-        $query = "DELETE FROM " . $this->table . " WHERE sku IN (" . $placeholders . ")";
+    public function addProduct($sku, $name, $price, $type, $attributes) {
+        $query = "INSERT INTO " . $this->table . " (sku, name, price, type, size_mb, weight_kg, dimensions_cm) 
+                  VALUES (:sku, :name, :price, :type, :size_mb, :weight_kg, :dimensions_cm)";
         $stmt = $this->conn->prepare($query);
 
-        // Execute the query with the product IDs
-        $stmt->execute($productIds);
+        $stmt->bindParam(':sku', $sku);
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':price', $price);
+        $stmt->bindParam(':type', $type);
+        $stmt->bindValue(':size_mb', $attributes['size_mb'] ?? null);
+        $stmt->bindValue(':weight_kg', $attributes['weight_kg'] ?? null);
+        $stmt->bindValue(':dimensions_cm', $attributes['dimensions_cm'] ?? null);
+
+        return $stmt->execute();
+    }
+
+    public function deleteProducts($productIds) {
+        $query = "DELETE FROM " . $this->table . " WHERE sku IN (" . implode(',', array_fill(0, count($productIds), '?')) . ")";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute($productIds);
     }
 }
 ?>
