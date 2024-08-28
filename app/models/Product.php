@@ -11,7 +11,7 @@ class Product {
         $query = "SELECT * FROM " . $this->table;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
-        return $stmt;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function skuExists($sku) {
@@ -26,16 +26,21 @@ class Product {
         $query = "INSERT INTO " . $this->table . " (sku, name, price, type, size_mb, weight_kg, dimensions_cm) 
                   VALUES (:sku, :name, :price, :type, :size_mb, :weight_kg, :dimensions_cm)";
         $stmt = $this->conn->prepare($query);
-
+    
         $stmt->bindParam(':sku', $sku);
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':price', $price);
         $stmt->bindParam(':type', $type);
-        $stmt->bindValue(':size_mb', $attributes['size_mb'] ?? null);
-        $stmt->bindValue(':weight_kg', $attributes['weight_kg'] ?? null);
-        $stmt->bindValue(':dimensions_cm', $attributes['dimensions_cm'] ?? null);
-
-        return $stmt->execute();
+        $stmt->bindValue(':size_mb', $attributes['size_mb'] ?? null, PDO::PARAM_STR);
+        $stmt->bindValue(':weight_kg', $attributes['weight_kg'] ?? null, PDO::PARAM_STR);
+        $stmt->bindValue(':dimensions_cm', $attributes['dimensions_cm'] ?? null, PDO::PARAM_STR);
+    
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            echo "Error: " . implode(":", $stmt->errorInfo());
+            return false;
+        }
     }
 
     public function deleteProducts($productIds) {

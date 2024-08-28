@@ -14,7 +14,7 @@ class App {
 
         if (file_exists($controllerFile)) {
             require $controllerFile;
-        
+            $controllerClass = ucfirst(str_replace('-', '', strtolower($url[0])));
             if (class_exists($controllerClass)) {
                 $this->controller = new $controllerClass($this->db);
                 unset($url[0]);

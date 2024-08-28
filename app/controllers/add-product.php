@@ -19,14 +19,6 @@ class AddProduct {
             $name = $_POST['name'];
             $price = $_POST['price'];
             $productType = $_POST['productType'];
-
-            $product = new Product($this->db);
-
-            if ($product->skuExists($sku)) {
-                echo json_encode(['success' => false, 'message' => 'SKU already exists']);
-                exit();
-            }
-
             $attributes = [];
             if ($productType === 'DVD') {
                 $attributes['size_mb'] = $_POST['size'] ?? null;
@@ -35,14 +27,25 @@ class AddProduct {
             } elseif ($productType === 'Furniture') {
                 $attributes['dimensions_cm'] = $_POST['height'] . 'x' . $_POST['width'] . 'x' . $_POST['length'];
             }
-
-            if ($product->addProduct($sku, $name, $price, $productType, $attributes)) {
-                header('Location: /home');
-                exit();
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Error saving product']);
+    
+            // Instantiate the Product model
+            $product = new Product($this->db);
+    
+            // Check if SKU already exists
+            if ($product->skuExists($sku)) {
+                echo json_encode(['success' => false, 'message' => 'SKU already exists!']);
                 exit();
             }
+    
+            // Add product to the database
+            if ($product->addProduct($sku, $name, $price, $productType, $attributes)) {
+                echo json_encode(['success' => true, 'message' => 'Product added successfully!']);
+                header('Location: /ecom_/public/home');
+                exit();
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to add product.']);
+            }
+            exit();
         }
     }
 }

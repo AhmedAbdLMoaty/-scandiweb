@@ -44,7 +44,7 @@
     <!-- Action Buttons -->
     <form method="post" action="index.php?action=delete_products">
         <div class="product-actions">
-            <a href="../add-product"><button id="add-product-btn" type="button">ADD</button></a>
+            <a href="./add-product"><button id="add-product-btn" type="button">ADD</button></a>
             <button id="delete-product-btn" type="submit">MASS DELETE</button>
         </div>
 

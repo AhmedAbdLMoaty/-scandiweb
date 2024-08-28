@@ -4,28 +4,25 @@ require_once __DIR__ . '/../models/Product.php';
 
 class Home {
     private $db;
+    private $productModel;
 
     public function __construct($db) {
         $this->db = $db;
+        $this->productModel = new Product($this->db);
     }
 
     public function index() {
-        if (isset($_GET['action']) && $_GET['action'] === 'delete_products' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->deleteProducts();
-        } else {
-            $this->showProductList();
-        }
+        $this->showProductList();
     }
 
     public function showProductList() {
-        $product = new Product($this->db);
-        $result = $product->getAllProducts();
-        
+        $productList = $this->productModel->getAllProducts();
         $products = [];
-        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+    
+        foreach ($productList as $row) {
             $products[] = $row;
         }
-
+    
         include __DIR__ . '/../views/Productlist.php';  
     }
 
@@ -48,10 +45,6 @@ class Home {
     
             $product = new Product($this->db);
     
-            if ($product->skuExists($sku)) {
-                echo json_encode(['success' => false, 'message' => 'SKU already exists']);
-                exit();
-            }
     
             $attributes = [];
             if ($productType === 'DVD') {
