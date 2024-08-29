@@ -26,9 +26,10 @@ jobs:
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.eu-north-1 }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
               run: |
                   aws ssm send-command \
                     --document-name "AWS-RunShellScript" \
                     --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
-                    --parameters 'commands=["cd /var/www/html/ecom_ && git pull origin main"]'
+                    --parameters 'commands=["cd /var/www/html/ecom_ && git pull origin main"]' \
+                    --region ${{ secrets.AWS_REGION }}
