@@ -10,6 +10,11 @@ class App {
         $url = $this->parseURL();
         $controllerClass = str_replace(' ', '', ucwords(str_replace('-', ' ', $url[0])));
         $controllerFile = "../app/controllers/" . ucfirst($url[0]) . ".php";
+
+        // Debugging output
+        error_log("Controller file: " . $controllerFile);
+        error_log("Controller class: " . $controllerClass);
+
         if (file_exists($controllerFile)) {
             require $controllerFile;
             $controllerClass = ucfirst(str_replace('-', '', strtolower($url[0])));
