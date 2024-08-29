@@ -4,38 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Product</title>
-    <style>
-        form {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .form-group button {
-            padding: 10px 15px;
-            margin-right: 10px;
-        }
-        .error {
-            color: red;
-            margin-top: 10px;
-        }
-        #dvdFields, #bookFields, #furnitureFields {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="/ecom_/app/views/addproduct.css">
 </head>
 <body>
 
@@ -56,7 +25,7 @@
     </div>
     <div class="form-group">
         <label for="productType">Product Type</label>
-        <select id="productType" name="productType" required onchange="showFields()">
+        <select id="productType" name="productType" required onchange="toggleFields()">
             <option value="">Select type</option>
             <option value="DVD">DVD</option>
             <option value="Book">Book</option>
@@ -105,20 +74,18 @@
 </form>
 
 <script>
-    function showFields() {
-        document.getElementById('dvdFields').style.display = 'none';
-        document.getElementById('bookFields').style.display = 'none';
-        document.getElementById('furnitureFields').style.display = 'none';
+    const fieldMap = {
+        DVD: 'dvdFields',
+        Book: 'bookFields',
+        Furniture: 'furnitureFields',
+    };
 
-        var productType = document.getElementById('productType').value;
-
-        if (productType === 'DVD') {
-            document.getElementById('dvdFields').style.display = 'block';
-        } else if (productType === 'Book') {
-            document.getElementById('bookFields').style.display = 'block';
-        } else if (productType === 'Furniture') {
-            document.getElementById('furnitureFields').style.display = 'block';
-        }
+    function toggleFields() {
+        const selectedType = document.getElementById('productType').value;
+        Object.keys(fieldMap).forEach(type => {
+            const field = document.getElementById(fieldMap[type]);
+            field.style.display = type === selectedType ? 'block' : 'none';
+        });
     }
 </script>
 

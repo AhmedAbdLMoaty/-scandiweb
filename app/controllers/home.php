@@ -26,13 +26,12 @@ class Home {
         include __DIR__ . '/../views/Productlist.php';  
     }
 
-    private function deleteProducts() {
+    public function delete_products() {
         if (isset($_POST['product_ids']) && is_array($_POST['product_ids'])) {
             $productIds = $_POST['product_ids'];
-            $product = new Product($this->db);
-            $product->deleteProducts($productIds);
+            $this->productModel->deleteProducts($productIds);
         }
-        header('Location: /home');
+        header('Location: /ecom_/public/home');
         exit();
     }
 
@@ -45,7 +44,6 @@ class Home {
     
             $product = new Product($this->db);
     
-    
             $attributes = [];
             if ($productType === 'DVD') {
                 $attributes['size_mb'] = $_POST['size'] ?? null;
@@ -56,7 +54,7 @@ class Home {
             }
     
             if ($product->addProduct($sku, $name, $price, $productType, $attributes)) {
-                header('Location: /home');
+                header('Location: /ecom_/public/home');
                 exit();
             } else {
                 echo json_encode(['success' => false, 'message' => 'Error saving product']);
