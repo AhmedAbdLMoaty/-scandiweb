@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
     push:
         branches:
-            - main # or any branch you want to deploy
+            - main
 
 jobs:
     deploy:
@@ -25,6 +25,6 @@ jobs:
               run: |
                   aws ssm send-command \
                     --document-name "AWS-RunShellScript" \
-                    --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+                    --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
                     --parameters 'commands=["cd /var/www/html/ecom_ && git pull origin main"]' \
                     --region ${{ secrets.AWS_REGION }}
