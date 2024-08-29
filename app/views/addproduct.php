@@ -32,6 +32,9 @@
             color: red;
             margin-top: 10px;
         }
+        #dvdFields, #bookFields, #furnitureFields {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -41,66 +44,83 @@
 <form id="product_form" method="post" action="./add-product/store">
     <div class="form-group">
         <label for="sku">SKU</label>
-        <input type="text" id="sku" name="sku" value="<?= htmlspecialchars($sku ?? '') ?>" required>
+        <input type="text" id="sku" name="sku" required>
     </div>
     <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" id="name" name="name" value="<?= htmlspecialchars($name ?? '') ?>" required>
+        <input type="text" id="name" name="name" required>
     </div>
     <div class="form-group">
         <label for="price">Price</label>
-        <input type="text" id="price" name="price" value="<?= htmlspecialchars($price ?? '') ?>" required>
+        <input type="text" id="price" name="price" required>
     </div>
     <div class="form-group">
         <label for="productType">Product Type</label>
-        <select id="productType" name="productType" onchange="this.form.submit()" required>
+        <select id="productType" name="productType" required onchange="showFields()">
             <option value="">Select type</option>
-            <option value="DVD" <?= ($productType ?? '') === 'DVD' ? 'selected' : '' ?>>DVD</option>
-            <option value="Book" <?= ($productType ?? '') === 'Book' ? 'selected' : '' ?>>Book</option>
-            <option value="Furniture" <?= ($productType ?? '') === 'Furniture' ? 'selected' : '' ?>>Furniture</option>
+            <option value="DVD">DVD</option>
+            <option value="Book">Book</option>
+            <option value="Furniture">Furniture</option>
         </select>
     </div>
 
-    <!-- Type-specific fields -->
-    <?php if (isset($productType)): ?>
-        <?php if ($productType === 'DVD'): ?>
-            <div class="form-group">
-                <label for="size">Size (MB)</label>
-                <input type="number" id="size" name="size" value="<?= htmlspecialchars($size_mb ?? '') ?>" required>
-                <small>Please, provide size.</small>
-            </div>
-        <?php elseif ($productType === 'Book'): ?>
-            <div class="form-group">
-                <label for="weight">Weight (Kg)</label>
-                <input type="number" id="weight" name="weight" value="<?= htmlspecialchars($weight_kg ?? '') ?>" required>
-                <small>Please, provide weight.</small>
-            </div>
-        <?php elseif ($productType === 'Furniture'): ?>
-            <div class="form-group">
-                <label for="height">Height (cm)</label>
-                <input type="number" id="height" name="height" value="<?= htmlspecialchars($height ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label for="width">Width (cm)</label>
-                <input type="number" id="width" name="width" value="<?= htmlspecialchars($width ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label for="length">Length (cm)</label>
-                <input type="number" id="length" name="length" value="<?= htmlspecialchars($length ?? '') ?>" required>
-            </div>
-            <small>Please, provide dimensions.</small>
-        <?php endif; ?>
-    <?php endif; ?>
+    <div id="dvdFields">
+        <div class="form-group">
+            <label for="size">Size (MB)</label>
+            <input type="number" id="size" name="size">
+            <small>Please, provide size.</small>
+        </div>
+    </div>
+
+    <div id="bookFields">
+        <div class="form-group">
+            <label for="weight">Weight (Kg)</label>
+            <input type="number" id="weight" name="weight">
+            <small>Please, provide weight.</small>
+        </div>
+    </div>
+
+    <div id="furnitureFields">
+        <div class="form-group">
+            <label for="height">Height (cm)</label>
+            <input type="number" id="height" name="height">
+        </div>
+        <div class="form-group">
+            <label for="width">Width (cm)</label>
+            <input type="number" id="width" name="width">
+        </div>
+        <div class="form-group">
+            <label for="length">Length (cm)</label>
+            <input type="number" id="length" name="length">
+        </div>
+        <small>Please, provide dimensions.</small>
+    </div>
 
     <div class="form-group">
         <button type="submit">Save</button>
-        <a href="/product-list"><button type="button">Cancel</button></a>
+        <a href="./"><button type="button">Cancel</button></a>
     </div>
 
-    <?php if (isset($errorMessage)): ?>
-        <div class="error"><?= htmlspecialchars($errorMessage) ?></div>
-    <?php endif; ?>
+    <div class="error" id="errorMessage"></div>
 </form>
+
+<script>
+    function showFields() {
+        document.getElementById('dvdFields').style.display = 'none';
+        document.getElementById('bookFields').style.display = 'none';
+        document.getElementById('furnitureFields').style.display = 'none';
+
+        var productType = document.getElementById('productType').value;
+
+        if (productType === 'DVD') {
+            document.getElementById('dvdFields').style.display = 'block';
+        } else if (productType === 'Book') {
+            document.getElementById('bookFields').style.display = 'block';
+        } else if (productType === 'Furniture') {
+            document.getElementById('furnitureFields').style.display = 'block';
+        }
+    }
+</script>
 
 </body>
 </html>
