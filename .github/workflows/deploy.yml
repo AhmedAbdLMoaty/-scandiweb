@@ -24,8 +24,8 @@ jobs:
 
             - name: Deploy to EC2
               env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AKIA34AMDK26CH7GOG5A }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.lEM3CobsPi7cmn81CkEDb8lLHh+GN/4t2H6vCW39 }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   AWS_REGION: ${{ secrets.eu-north-1 }}
               run: |
                   aws ssm send-command \
