@@ -30,6 +30,6 @@ jobs:
               run: |
                   aws ssm send-command \
                     --document-name "AWS-RunShellScript" \
-                    --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
-                    --parameters commands='["cd /var/www/html/ecom_ && git pull origin main"]' \
+                    --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+                    --parameters 'commands=["cd /var/www/html/ecom_ && git pull origin main"]' \
                     --region ${{ secrets.AWS_REGION }}
