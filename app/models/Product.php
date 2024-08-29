@@ -1,4 +1,7 @@
 <?php
+
+require_once __DIR__ . '/ProductsType.php';
+
 class Product {
     private $conn;
     private $table = "products";
@@ -8,7 +11,7 @@ class Product {
     }
 
     public function getAllProducts() {
-        $query = "SELECT * FROM " . $this->table . " ORDER BY id"; // Ensure sorting by primary key
+        $query = "SELECT * FROM " . $this->table . " ORDER BY id";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -22,31 +25,37 @@ class Product {
         return $stmt->fetchColumn() > 0;
     }
 
-    public function addProduct($sku, $name, $price, $type, $attributes) {
-        $query = "INSERT INTO " . $this->table . " (sku, name, price, type, size_mb, weight_kg, dimensions_cm) 
-                  VALUES (:sku, :name, :price, :type, :size_mb, :weight_kg, :dimensions_cm)";
-        $stmt = $this->conn->prepare($query);
-    
-        $stmt->bindParam(':sku', $sku);
-        $stmt->bindParam(':name', $name);
-        $stmt->bindParam(':price', $price);
-        $stmt->bindParam(':type', $type);
-        $stmt->bindValue(':size_mb', $attributes['size_mb'] ?? null, PDO::PARAM_STR);
-        $stmt->bindValue(':weight_kg', $attributes['weight_kg'] ?? null, PDO::PARAM_STR);
-        $stmt->bindValue(':dimensions_cm', $attributes['dimensions_cm'] ?? null, PDO::PARAM_STR);
-    
-        if ($stmt->execute()) {
-            return true;
-        } else {
-            echo "Error: " . implode(":", $stmt->errorInfo());
-            return false;
+    public function addProduct($sku, $name, $price, $productType, $attributes) {
+        $product = null;
+        switch ($productType) {
+            case 'DVD':
+                $product = new DVD($sku, $name, $price, $attributes['size_mb']);
+                break;
+            case 'Book':
+                $product = new Book($sku, $name, $price, $attributes['weight_kg']);
+                break;
+            case 'Furniture':
+                $product = new Furniture($sku, $name, $price, $attributes['dimensions_cm']);
+                break;
         }
+        if ($product) {
+            $query = "INSERT INTO " . $this->table . " (sku, name, price, type, attributes) VALUES (:sku, :name, :price, :type, :attributes)";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':sku', $sku);
+            $stmt->bindParam(':name', $name);
+            $stmt->bindParam(':price', $price);
+            $stmt->bindParam(':type', $productType);
+            $stmt->bindParam(':attributes', json_encode($product->getAttributes()));
+            return $stmt->execute();
+        }
+        return false;
     }
 
-    public function deleteProducts($productIds) {
-        $query = "DELETE FROM " . $this->table . " WHERE sku IN (" . implode(',', array_fill(0, count($productIds), '?')) . ")";
-        $stmt = $this->conn->prepare($query);
-        return $stmt->execute($productIds);
-    }
+public function deleteProducts($skus) {
+    $placeholders = implode(',', array_fill(0, count($skus), '?'));
+    $query = "DELETE FROM " . $this->table . " WHERE sku IN ($placeholders)";
+    $stmt = $this->conn->prepare($query);
+    return $stmt->execute($skus);
+}
 }
 ?>

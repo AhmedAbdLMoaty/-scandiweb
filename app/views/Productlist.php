@@ -27,17 +27,7 @@
                         <p><strong><?php echo $product['sku']; ?></strong></p>
                         <p><?php echo $product['name']; ?></p>
                         <p><?php echo $product['price']; ?> $</p>
-                        <p>
-                            <?php
-                            if ($product['type'] == 'DVD') {
-                                echo "Size: " . $product['size_mb'] . " MB";
-                            } elseif ($product['type'] == 'Book') {
-                                echo "Weight: " . $product['weight_kg'] . " Kg";
-                            } elseif ($product['type'] == 'Furniture') {
-                                echo "Dimensions: " . $product['dimensions_cm'];
-                            }
-                            ?>
-                        </p>
+                        <p><?php echo $product['type'] === 'DVD' ? "Size: " . $product['size_mb'] . " MB" : ($product['type'] === 'Book' ? "Weight: " . $product['weight_kg'] . " Kg" : "Dimensions: " . $product['dimensions_cm']); ?></p>
                     </div>
                 </div>
             <?php endforeach; ?>

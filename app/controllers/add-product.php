@@ -4,15 +4,12 @@ require_once __DIR__ . '/../models/Product.php';
 
 class AddProduct {
     private $db;
-
     public function __construct($db) {
         $this->db = $db;
     }
-
     public function index() {
         include __DIR__ . '/../views/addproduct.php';  
     }
-
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sku = $_POST['sku'];

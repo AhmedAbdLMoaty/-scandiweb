@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../core/database.php';  
 require_once __DIR__ . '/../models/Product.php'; 
+require_once __DIR__ . '/../models/ProductsType.php';
 
 class Home {
     private $db;
@@ -42,18 +43,16 @@ class Home {
             $price = $_POST['price'];
             $productType = $_POST['productType'];
     
-            $product = new Product($this->db);
-    
-            $attributes = [];
             if ($productType === 'DVD') {
-                $attributes['size_mb'] = $_POST['size'] ?? null;
+                $product = new DVD($sku, $name, $price, $_POST['size']);
             } elseif ($productType === 'Book') {
-                $attributes['weight_kg'] = $_POST['weight'] ?? null;
+                $product = new Book($sku, $name, $price, $_POST['weight']);
             } elseif ($productType === 'Furniture') {
-                $attributes['dimensions_cm'] = $_POST['height'] . 'x' . $_POST['width'] . 'x' . $_POST['length'];
+                $dimensions = $_POST['height'] . 'x' . $_POST['width'] . 'x' . $_POST['length'];
+                $product = new Furniture($sku, $name, $price, $dimensions);
             }
     
-            if ($product->addProduct($sku, $name, $price, $productType, $attributes)) {
+            if ($this->productModel->addProduct($product)) {
                 header('Location: /ecom_/public/home');
                 exit();
             } else {
