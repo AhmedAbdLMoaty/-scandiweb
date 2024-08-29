@@ -23,7 +23,6 @@ jobs:
             - name: Deploy to CodeDeploy
               run: |
                   aws deploy create-deployment \
-                    --application-name scandiweb \
-                    --deployment-group-name my-deployment-group \
+                    --application-name "scandiweb" \
                     --revision "{\"revisionType\":\"S3\",\"s3Location\":{\"bucket\":\"my-bucket\",\"key\":\"my-app.zip\",\"bundleType\":\"zip\"}}" \
                     --description "Deploying new version"
