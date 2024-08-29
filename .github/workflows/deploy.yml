@@ -1,9 +1,9 @@
-name: Deploy to EC2
+name: Deploy to CodeDeploy
 
 on:
     push:
         branches:
-            - main # or the branch you want to deploy
+            - main
 
 jobs:
     deploy:
@@ -13,27 +13,17 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            - name: Set up Python
-              uses: actions/setup-python@v2
+            - name: Set up AWS CLI
+              uses: aws-actions/configure-aws-credentials@v2
               with:
-                  python-version: "3.x"
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
 
-            - name: Install dependencies
+            - name: Deploy to CodeDeploy
               run: |
-                  pip install awscli
-
-            - name: Deploy to EC2
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-              run: |
-                  echo "Running AWS SSM command..."
-                  aws ssm send-command \
-                    --document-name "AWS-RunShellScript" \
-                    --targets "Key=instanceids,Values=i-074d998711dc172eb" \
-                    --parameters 'commands=["cd /var/www/html/ecom_ && git pull origin main"]' \
-                    --region ${{ secrets.AWS_REGION }} \
-                    --query "Command.CommandId" \
-                    --output text
-                  echo "SSM Command issued."
+                  aws deploy create-deployment \
+                    --application-name my-application \
+                    --deployment-group-name my-deployment-group \
+                    --revision "{\"revisionType\":\"S3\",\"s3Location\":{\"bucket\":\"my-bucket\",\"key\":\"my-app.zip\",\"bundleType\":\"zip\"}}" \
+                    --description "Deploying new version"
