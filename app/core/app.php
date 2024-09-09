@@ -1,52 +1,62 @@
 <?php
 class App {
-    protected $controller = "Home";
-    protected $method = "index";
+    protected $controller = 'home';
+    protected $method = 'index';
     protected $params = [];
-    private $db;
+    private $db; // Explicitly declare the $db property
 
     public function __construct($db) {
-        $this->db = $db;
-        $url = $this->parseURL();
-        $controllerClass = str_replace(' ', '', ucwords(str_replace('-', ' ', $url[0])));
-        $controllerFile = "../app/controllers/" . ucfirst($url[0]) . ".php";
+        $this->db = $db; // Assign the database connection to the $db property
+        $url = $this->parseUrl();
 
-        // Debugging output
-        error_log("Controller file: " . $controllerFile);
-        error_log("Controller class: " . $controllerClass);
+        // Check if URL is empty and default to Home controller
+        if (empty($url[0])) {
+            $url[0] = 'home';
+        }
 
-        if (file_exists($controllerFile)) {
-            require $controllerFile;
-            $controllerClass = ucfirst(str_replace('-', '', strtolower($url[0])));
-            if (class_exists($controllerClass)) {
-                $this->controller = new $controllerClass($this->db);
-                unset($url[0]);
-                if (isset($url[1]) && method_exists($this->controller, $url[1])) {
-                    $this->method = $url[1];
-                    unset($url[1]);
+        // Whitelist of allowed controllers
+        $allowedControllers = ['home', 'add-product'];
+
+        // Convert URL to lowercase and check if it's in the allowed controllers
+        $controllerName = strtolower($url[0]);
+        if (in_array($controllerName, $allowedControllers)) {
+            $controllerFile = __DIR__ . '/../controllers/' . $controllerName . '.php';
+            if (file_exists($controllerFile)) {
+                require_once $controllerFile;
+                $controllerClass = str_replace('-', '', ucfirst($controllerName));
+                if (class_exists($controllerClass)) {
+                    $this->controller = new $controllerClass($this->db);
+                    unset($url[0]);
+                } else {
+                    // Handle the case where the class is not found
+                    echo "Class $controllerClass not found.";
+                    exit();
                 }
             } else {
-                $this->method = "index";
+                // Handle the case where the controller file is not found
+                echo "Controller file $controllerFile not found.";
+                exit();
             }
         } else {
-            $this->method = "index";
+            // Handle the case where the controller is not allowed
+            echo "Controller $controllerName is not allowed.";
+            exit();
         }
+
+        if (isset($url[1])) {
+            if (method_exists($this->controller, $url[1])) {
+                $this->method = $url[1];
+                unset($url[1]);
+            }
+        }
+
         $this->params = $url ? array_values($url) : [];
-        if (is_callable([$this->controller, $this->method])) {
-            call_user_func_array([$this->controller, $this->method], $this->params);
-        } else {
-            if (method_exists($this->controller, 'index')) {
-                $this->controller->index();
-            } else {
-                echo "404 - Method Not Found";
-            }
-        }
+        call_user_func_array([$this->controller, $this->method], $this->params);
     }
 
-    private function parseURL() {
-        $url = isset($_GET['url']) ? $_GET['url'] : "home/index";
-        $url = filter_var(trim($url, "/"), FILTER_SANITIZE_URL);
-        return explode("/", $url);
+    public function parseUrl() {
+        if (isset($_GET['url'])) {
+            return explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL));
+        }
     }
 }
-?>

@@ -5,6 +5,7 @@ require_once __DIR__ . '/ProductsType.php';
 class Product {
     private $conn;
     private $table = "products";
+    private $db;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -26,36 +27,44 @@ class Product {
     }
 
     public function addProduct($sku, $name, $price, $productType, $attributes) {
-        $product = null;
-        switch ($productType) {
-            case 'DVD':
-                $product = new DVD($sku, $name, $price, $attributes['size_mb']);
-                break;
-            case 'Book':
-                $product = new Book($sku, $name, $price, $attributes['weight_kg']);
-                break;
-            case 'Furniture':
-                $product = new Furniture($sku, $name, $price, $attributes['dimensions_cm']);
-                break;
+        // Save main product details
+        $query = $this->db->prepare("INSERT INTO products (sku, name, price, productType) VALUES (:sku, :name, :price, :productType)");
+        $query->execute([
+            'sku' => $sku,
+            'name' => $name,
+            'price' => $price,
+            'productType' => $productType
+        ]);
+    
+        $productId = $this->db->lastInsertId(); // Get the last inserted product ID
+    
+        // Save product-specific attributes based on the type
+        if ($productType === 'DVD') {
+            $query = $this->db->prepare("INSERT INTO product_attributes (product_id, attribute_name, attribute_value) VALUES (:product_id, 'size', :value)");
+            $query->execute(['product_id' => $productId, 'value' => $attributes['size']]);
+        } elseif ($productType === 'Book') {
+            $query = $this->db->prepare("INSERT INTO product_attributes (product_id, attribute_name, attribute_value) VALUES (:product_id, 'weight', :value)");
+            $query->execute(['product_id' => $productId, 'value' => $attributes['weight']]);
+        } elseif ($productType === 'Furniture') {
+            $query = $this->db->prepare("INSERT INTO product_attributes (product_id, attribute_name, attribute_value) VALUES (:product_id, 'height', :value)");
+            $query->execute(['product_id' => $productId, 'value' => $attributes['height']]);
+    
+            $query = $this->db->prepare("INSERT INTO product_attributes (product_id, attribute_name, attribute_value) VALUES (:product_id, 'width', :value)");
+            $query->execute(['product_id' => $productId, 'value' => $attributes['width']]);
+    
+            $query = $this->db->prepare("INSERT INTO product_attributes (product_id, attribute_name, attribute_value) VALUES (:product_id, 'length', :value)");
+            $query->execute(['product_id' => $productId, 'value' => $attributes['length']]);
         }
-        if ($product) {
-            $query = "INSERT INTO " . $this->table . " (sku, name, price, type, attributes) VALUES (:sku, :name, :price, :type, :attributes)";
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':sku', $sku);
-            $stmt->bindParam(':name', $name);
-            $stmt->bindParam(':price', $price);
-            $stmt->bindParam(':type', $productType);
-            $stmt->bindParam(':attributes', json_encode($product->getAttributes()));
-            return $stmt->execute();
-        }
-        return false;
+    
+        return true;
     }
+    
 
-public function deleteProducts($skus) {
-    $placeholders = implode(',', array_fill(0, count($skus), '?'));
-    $query = "DELETE FROM " . $this->table . " WHERE sku IN ($placeholders)";
-    $stmt = $this->conn->prepare($query);
-    return $stmt->execute($skus);
-}
+    public function deleteProducts($skus) {
+        $placeholders = implode(',', array_fill(0, count($skus), '?'));
+        $query = "DELETE FROM " . $this->table . " WHERE sku IN ($placeholders)";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute($skus);
+    }
 }
 ?>

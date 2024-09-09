@@ -1,66 +1,53 @@
 <?php
-require_once __DIR__ . '/../core/database.php';  
-require_once __DIR__ . '/../models/Product.php'; 
-require_once __DIR__ . '/../models/ProductsType.php';
+require_once __DIR__ . '/../core/database.php';
+require_once __DIR__ . '/../models/Product.php';
 
 class Home {
     private $db;
-    private $productModel;
 
     public function __construct($db) {
         $this->db = $db;
-        $this->productModel = new Product($this->db);
     }
 
     public function index() {
-        $this->showProductList();
-    }
-
-    public function showProductList() {
-        $productList = $this->productModel->getAllProducts();
-        $products = [];
-    
-        foreach ($productList as $row) {
-            $products[] = $row;
-        }
-    
-        include __DIR__ . '/../views/Productlist.php';  
+        $product = new Product($this->db);
+        $products = $product->getAllProducts();
+        include __DIR__ . '/../views/Productlist.php';
     }
 
     public function delete_products() {
+        error_log("delete_products method called");
         if (isset($_POST['product_ids']) && is_array($_POST['product_ids'])) {
             $productIds = $_POST['product_ids'];
-            $this->productModel->deleteProducts($productIds);
+            error_log("Product IDs to delete: " . implode(", ", $productIds));
+            $product = new Product($this->db);
+            $product->deleteProducts($productIds);
         }
-        header('Location: /ecom_/public/home');
+        header('Location: ' . BASE_URL . '/home');
         exit();
     }
 
     public function addProduct() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $sku = $_POST['sku'];
-            $name = $_POST['name'];
-            $price = $_POST['price'];
-            $productType = $_POST['productType'];
-    
-            if ($productType === 'DVD') {
-                $product = new DVD($sku, $name, $price, $_POST['size']);
-            } elseif ($productType === 'Book') {
-                $product = new Book($sku, $name, $price, $_POST['weight']);
-            } elseif ($productType === 'Furniture') {
-                $dimensions = $_POST['height'] . 'x' . $_POST['width'] . 'x' . $_POST['length'];
-                $product = new Furniture($sku, $name, $price, $dimensions);
+            $productIds = $_POST['product_ids'] ?? [];
+            $product = new Product($this->db);
+            foreach ($productIds as $sku) {
+                $product->deleteProduct($sku);
             }
-    
-            if ($this->productModel->addProduct($product)) {
-                header('Location: /ecom_/public/home');
-                exit();
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Error saving product']);
-                exit();
-            }
+            header('Location: ' . BASE_URL . '/home');
+            exit();
         }
-        include __DIR__ . '/../views/addproduct.php';  
+        // Check if the view file exists before including it
+        $viewFile = __DIR__ . '/../views/addproduct.php';
+        if (file_exists($viewFile)) {
+            include $viewFile;
+        } else {
+            // Log an error message and display a user-friendly error page
+            error_log("View file not found: " . $viewFile);
+            header("HTTP/1.0 404 Not Found");
+            include __DIR__ . '/../views/404.php'; // Ensure you have a 404.php file in your views directory
+            exit();
+        }
     }
 }
 ?>
