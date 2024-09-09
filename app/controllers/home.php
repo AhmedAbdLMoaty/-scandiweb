@@ -37,15 +37,13 @@ class Home {
             header('Location: ' . BASE_URL . '/home');
             exit();
         }
-        // Check if the view file exists before including it
         $viewFile = __DIR__ . '/../views/addproduct.php';
         if (file_exists($viewFile)) {
             include $viewFile;
         } else {
-            // Log an error message and display a user-friendly error page
             error_log("View file not found: " . $viewFile);
             header("HTTP/1.0 404 Not Found");
-            include __DIR__ . '/../views/404.php'; // Ensure you have a 404.php file in your views directory
+            include __DIR__ . '/../views/404.php';
             exit();
         }
     }
