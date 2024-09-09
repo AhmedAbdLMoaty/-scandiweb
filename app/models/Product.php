@@ -38,7 +38,7 @@ class Product {
         $stmt->bindValue(':productType', $productType);
         return $stmt->execute();
     }
-    
+
 public function deleteProducts($skus) {
     $placeholders = implode(',', array_fill(0, count($skus), '?'));
     $query = "DELETE FROM " . $this->table . " WHERE sku IN ($placeholders)";
