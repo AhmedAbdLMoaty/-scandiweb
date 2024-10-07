@@ -6,6 +6,10 @@ class Home {
     private $db;
 
     public function __construct($db) {
+        $this->init($db);
+    }
+
+    private function init($db) {
         $this->db = $db;
     }
 

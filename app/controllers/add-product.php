@@ -6,6 +6,10 @@ class AddProduct {
     private $product;
 
     public function __construct($db) {
+        $this->init($db);
+    }
+
+    private function init($db) {
         $this->product = new Product($db);
     }
 
@@ -19,17 +23,11 @@ class AddProduct {
             $name = $_POST['name'];
             $price = $_POST['price'];
             $productType = $_POST['productType'];
-            $attributes = [
-                'size_mb' => $_POST['size'] ?? null,
-                'weight_kg' => $_POST['weight'] ?? null,
-                'dimensions_cm' => ($_POST['height'] ?? '') . 'x' . ($_POST['width'] ?? '') . 'x' . ($_POST['length'] ?? '')
-            ];
-
+            $attributes = $this->getAttributes($productType, $_POST);
             if ($this->product->skuExists($sku)) {
                 echo json_encode(['success' => false, 'message' => 'SKU already exists!']);
                 exit();
             }
-
             if ($this->product->addProduct($sku, $name, $price, $productType, $attributes)) {
                 header('Location: ' . BASE_URL . '/home');
                 exit();
@@ -39,6 +37,22 @@ class AddProduct {
                 exit();
             }
         }
+    }
+    
+    private function getAttributes($productType, $postData) {
+        $attributes = [];
+        switch ($productType) {
+            case 'DVD':
+                $attributes['size_mb'] = $postData['size'] ?? null;
+                break;
+            case 'Book':
+                $attributes['weight_kg'] = $postData['weight'] ?? null;
+                break;
+            case 'Furniture':
+                $attributes['dimensions_cm'] = ($postData['height'] ?? '') . 'x' . ($postData['width'] ?? '') . 'x' . ($postData['length'] ?? '');
+                break;
+        }
+        return $attributes;
     }
 }
 ?>

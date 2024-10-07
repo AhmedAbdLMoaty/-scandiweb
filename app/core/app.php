@@ -7,14 +7,15 @@ class App {
 
     public function __construct($db) {
         $this->db = $db;
-        $url = $this->parseUrl();
+        $this->init();
+    }
 
+    private function init() {
+        $url = $this->parseUrl();
         if (empty($url[0])) {
             $url[0] = 'home';
         }
-
         $allowedControllers = ['home', 'add-product'];
-
         $controllerName = strtolower($url[0]);
         if (in_array($controllerName, $allowedControllers)) {
             $controllerFile = __DIR__ . '/../controllers/' . $controllerName . '.php';
@@ -36,14 +37,14 @@ class App {
             echo "Controller $controllerName is not allowed.";
             exit();
         }
-        
+
         if (isset($url[1])) {
             if (method_exists($this->controller, $url[1])) {
                 $this->method = $url[1];
                 unset($url[1]);
             }
         }
-        
+
         $this->params = $url ? array_values($url) : [];
         call_user_func_array([$this->controller, $this->method], $this->params);
     }
@@ -54,3 +55,4 @@ class App {
         }
     }
 }
+?>
